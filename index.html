@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Hola</title>
+<title>hola</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Caveat:wght@500&display=swap">
 <style>
 :root{color-scheme:light;--bg:#f0ebe6;--ink:#1c1b18;--soft:#6f6a63;--line:#d9d2cb;--card:#faf7f4;
@@ -42,21 +42,27 @@ h2{font-size:inherit;line-height:inherit;font-weight:600;margin:2rem 0 .6rem}
 </style>
 </head>
 <body>
-<div id="bar" role="progressbar" aria-valuemin="1" aria-valuemax="7"></div>
+<div id="bar" role="progressbar" aria-valuemin="1" aria-valuemax="8"></div>
 <main id="app" aria-live="polite"></main>
 <script>
 // ✏️ Editá acá la historia. Cada nivel tiene texto, una nota a mano (aside) y opciones que llevan a otro nivel.
 const NAME = "Tati";
 const STORY = {
   start: {
+    text: ["Hola, ¿te/los puedo molestar un segundo?"],
+    choices: [
+      { label: "Sí, claro", reply: "Sí, claro", to: "intro", main: true },
+      { label: "Ahora no puedo", reply: "Ahora no puedo", to: "no" }
+    ]
+  },
+  intro: {
     text: [
-      "Chicos, antes que nada les quiero pedir disculpas si estuve tan intensa o loca o disparatada todo este tiempo. Les quiero contar lo que me pasó… pero es largo.",
-      "Así que antes de invadir su espacio y su tiempo, generé un sistema de pasos, para que cada uno siga su curiosidad e intuición y haga como le plazca.",
-      "¿Quieren saber qué estoy pensando?"
+      "Estuve pensando en vos/ustedes y quiero contarte/contarles algo.",
+      "Pero como no quería invadir su espacio, generé este maravilloso sistema de pasos."
     ],
     choices: [
-      { label: "Sí", reply: "Sí", to: "found", main: true },
-      { label: "No, la verdad que no. Quiero seguir haciendo lo que estaba haciendo.", reply: "No, la verdad que no. Quiero seguir haciendo lo que estaba haciendo.", to: "no" }
+      { label: "Ok, entiendo, contame", reply: "Ok, entiendo, contame", to: "found", main: true },
+      { label: "Ok, después lo miro", reply: "Ok, después lo miro", to: "no" }
     ]
   },
   found: {
@@ -161,7 +167,7 @@ function levelEl(id, n, past){
   return box;
 }
 
-const TOTAL=7;
+const TOTAL=8;
 function updateBar(n){
   const bar=document.getElementById("bar");bar.innerHTML="";
   for(let i=1;i<=TOTAL;i++){
