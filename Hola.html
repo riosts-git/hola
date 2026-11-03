@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Antes de que sigas</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Caveat:wght@500&display=swap">
+<style>
+:root{color-scheme:light;--bg:#f0ebe6;--ink:#1c1b18;--soft:#6f6a63;--line:#d9d2cb;--card:#faf7f4;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Inter Tight","Helvetica Neue",Arial,sans-serif;font-size:19px;line-height:1.6}
+main{max-width:36rem;margin:0 auto;padding:3.5rem 1.4rem 6rem}
+.level{margin-bottom:2.8rem}
+.level.past{opacity:.5}
+.tag{font-size:.9rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);margin:0 0 .5rem}
+.level p{margin:0 0 1.1rem}
+.aside{font-family:Caveat,"Segoe Script",cursive;font-size:1.5rem;line-height:1.3;color:var(--soft)}
+.big{font-size:inherit;line-height:inherit;font-weight:400}
+h2{font-size:inherit;line-height:inherit;font-weight:600;margin:2rem 0 .6rem}
+.item{padding-left:1rem;border-left:2px solid var(--line);font-size:inherit;line-height:inherit}
+.choices{display:flex;flex-direction:column;align-items:flex-start;gap:.7rem;margin-top:1.8rem}
+.choices button,.restart{font:inherit;font-size:1rem;font-weight:500;line-height:1.35;text-align:left;padding:.7rem 1.3rem;border-radius:2rem;border:1px solid var(--ink);background:var(--ink);color:var(--card);cursor:pointer;transition:transform .2s,border-color .2s}
+.choices button.main,.restart{background:var(--card);color:var(--ink);border-color:var(--line)}
+.choices button:hover,.restart:hover{transform:translateX(4px)}
+.choices button.main:hover,.restart:hover{border-color:var(--ink)}
+.choices button:focus-visible,.restart:focus-visible,.back:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.reply{text-align:right;margin:-1.2rem 0 2.8rem 12%}
+.reply span{display:inline-block;padding:.6rem 1.2rem;border-radius:1.4rem;background:var(--ink);color:var(--card);font-size:1rem;font-weight:500;line-height:1.35;text-align:left}
+.back{font:inherit;font-size:.9rem;background:none;border:none;color:var(--soft);text-decoration:underline;cursor:pointer;padding:0;margin-top:1rem}
+#bar{position:sticky;top:0;z-index:5;display:flex;align-items:center;max-width:36rem;margin:0 auto;padding:calc(1rem + env(safe-area-inset-top,0px)) 1.4rem 1rem;background:var(--bg)}
+#bar i{flex:none;width:9px;height:9px;border-radius:50%;background:var(--line);transition:background .4s}
+#bar b{flex:1;height:2px;background:var(--line);position:relative}
+#bar b::after{content:"";position:absolute;inset:0;background:var(--ink);transform:scaleX(0);transform-origin:left;transition:transform .4s}
+#bar i.on{background:var(--ink)}
+#bar b.on::after{transform:scaleX(1)}
+@media (prefers-reduced-motion:reduce){#bar i,#bar b::after{transition:none}}
+.enter{animation:in .6s ease both}
+@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.enter{animation:none}.choices button,.restart{transition:none}}
+</style>
+</head>
+<body>
+<div id="bar" role="progressbar" aria-valuemin="1" aria-valuemax="7"></div>
+<main id="app" aria-live="polite"></main>
+<script>
+// ✏️ Editá acá la historia. Cada nivel tiene texto, una nota a mano (aside) y opciones que llevan a otro nivel.
+const NAME = "Tati";
+const STORY = {
+  start: {
+    text: [
+      "Chicos, antes que nada les quiero pedir disculpas si estuve tan intensa o loca o disparatada todo este tiempo. Les quiero contar lo que me pasó… pero es largo.",
+      "Así que antes de invadir su espacio y su tiempo, generé un sistema de pasos, para que cada uno siga su curiosidad e intuición y haga como le plazca.",
+      "¿Quieren saber qué estoy pensando?"
+    ],
+    choices: [
+      { label: "Sí", reply: "Sí", to: "found", main: true },
+      { label: "No, la verdad que no. Quiero seguir haciendo lo que estaba haciendo.", reply: "No, la verdad que no. Quiero seguir haciendo lo que estaba haciendo.", to: "no" }
+    ]
+  },
+  found: {
+    text: ["Excelente. Les cuento… encontré algo. Y a priori no sabía qué hacer con eso, pero ahora tengo un plan y se los quiero contar."],
+    big: true,
+    choices: [
+      { label: "¿Eh?", reply: "¿Eh?", to: "spring", main: true },
+      { label: "Ahora no puedo, Tat", reply: "Ahora no puedo, Tat", to: "no" }
+    ]
+  },
+  spring: {
+    text: [
+      "Iba yo caminando y me encontré un manantial.",
+      "Tomé agua y está buenísima. Fui, volví, varias veces; siempre está ahí y siempre está buenísima. Y yo se lo iba contando a todo el mundo: ¡miren qué lindo el manantial este, che!",
+      "Y todos me decían: wow, qué lindo parece, pero yo prefiero tomar vino, gracias.",
+      "Pero googleé y aparentemente hay mucha gente, muy importante, pagando mucha plata por descubrir dónde queda el manantial. Mi manantial. Y también hay mucha, mucha gente vendiendo planos de supuestos manantiales.",
+      "Lo que me genera muchos conflictos: ¿debería decirlo? ¿Cobrarlo? ¿Compartirlo? ¿Cómo? ¿Es seguro? ¿Qué hacer si uno se encuentra con un manantial? ¿A quién pedirle ayuda?",
+      "Por suerte, la misma gente a la que querría beneficiar es la misma a la que llamo cuando tengo miedo de mandarme una cagada, la misma que confía en mí, la que sabe cuándo frenarme. También conocidos como “mi gente”."
+    ],
+    choices: [
+      { label: "¡Ohh sí, otro delirio de Tati, qué divertido! Contame toooodo", reply: "¡Contame toooodo!", to: "plan", main: true },
+      { label: "Tati, tengo 3 hijos, 2 tesis y 4 trabajos… no puedo ahora, suena encantador, éxitos con todo.", reply: "No puedo ahora, éxitos con todo.", to: "no" }
+    ]
+  },
+  plan: {
+    text: [
+      "## El plan",
+      "- Publicidad: “La leyenda del manantial, conocé la verdad”.",
+      "- Micrositio 1, el plano del manantial: 5 euros (ponele que 20.000).",
+      "- Micrositio 2, qué frutas hay en el manantial: 10 euros (ponele que 200.000).",
+      "- Micrositio 3, qué frutas hay en el manantial 2: 500 euros (ponele que 100.000).",
+      "A definir: cuánta info, qué tan conectados están los sitios, qué cuenta y facturación usar para cada uno, y cada cuánto sacarlo.",
+      "## Y si queremos",
+      "- Micrositio final, cómo funciona el manantial: enlace a los derechos del libro. 5.000 euros para acceder al contrato con el precio, los detalles y el botón de pago final.",
+      "## Contrato",
+      "El que lo pague primero se queda con los derechos de … , en el país … , por el período tal."
+    ],
+    choices: [
+      { label: "¡Yo estoy, eh!", reply: "¡Yo estoy, eh!", to: "problem", main: true },
+      { label: "Tati, estás delirando, buscá un psicólogo, amiga…", reply: "Tati, estás delirando, buscá un psicólogo, amiga…", to: "listen" }
+    ]
+  },
+  listen: {
+    text: [
+      "Puede ser. Gracias por decírmelo así, de frente. Lo voy a hablar con alguien antes de seguir.",
+      "Te quiero igual. Y gracias por leer hasta acá."
+    ],
+    restart: true
+  },
+  problem: {
+    text: [
+      "## El problema",
+      "El tiempo. Yo no soy Einstein: si lo encontré yo, lo encuentra cualquiera. Y no sé cuánto tiempo de ejecución hay de ahora en adelante. Creo que habría que hacerlo ya, pero estoy muy ansiosa como para decidirlo yo. Por eso mismo: quienes estén dispuestos a prestarle atención y moverlo, se los cuento y ustedes deciden cómo operar según sus necesidades. Dicho de otra forma, me está haciendo mal retener todo esto yo sola. Necesito saber quiénes de ustedes confían en mí, lo valoran y están dispuestos a moverlo. Y también necesito cederles un poco el control para que puedan ver todo y decidir qué conviene, cómo y cuándo."
+    ],
+    choices: [
+      { label: "Sí, claro que me interesa mover esto, pero dejame ver si es real", reply: "Me interesa, pero dejame ver si es real", to: "team", main: true },
+      { label: "Te agradezco, pero ahora no puedo, Tati", reply: "Te agradezco, pero ahora no puedo", to: "no" }
+    ]
+  },
+  team: {
+    text: [
+      "## El equipo",
+      "Mi visión, si están de acuerdo, es esta:",
+      "- Nani, Yoli y Fer: mi conciencia y sostén emocional. Coordinan que todos estemos bien y revisan conmigo el contenido de los videos y del libro (20-30 hojas) para que sea anónimo, claro, lo bastante atractivo y lo bastante limpio como para no ofender a nadie. Yoli termina la tesis en diciembre, así que hasta entonces es unidireccional: puede joder, pero no se la puede joder.",
+      "- Juli: todo lo legal en España y Argentina, coordinando con Checho. Redacta contratos, crea empresas, etc. En un mes viajan a Argentina.",
+      "- Checho: los sitios, el cobro, separar la guita y que todos podamos acceder sin quedar pegados ni que Hacienda o AFIP nos maten.",
+      "- Marie, Aldi y Tete: videos y comunicación visual. Marie está de posparto, así que hace lo que quiere y es unidireccional. Videos nivel gordo tucumano, con IA que dé un poquito de repelús. La estética la hablamos después.",
+      "- Bosco y Seba (también de posparto, pero si lo dejo afuera me mata): redes.",
+      "- Mamá y papá: socios anónimos. Tan anónimos que por ahora ni ellos lo saben. Pero como están atados a mi suerte, que por lo menos puedan disfrutar de los beneficios si los hay.",
+      "Como habrán notado, el más lento de la lista es una cheeta. Y todos saben de todo. Así que, para que reine la paz, mi plan es que cada uno se encargue de su parte. Todos podamos ver, revisar y opinar sobre todo. Todos nos cuidemos a todos. Y todos juntos evaluemos cuándo tirarle fuego, acelerar, frenar o cerrar."
+    ],
+    choices: [
+      { label: "Quiero ser parte", reply: "Quiero ser parte", to: "end", main: true },
+      { label: "Prefiero mirar desde afuera por ahora", reply: "Prefiero mirar desde afuera por ahora", to: "no" }
+    ]
+  },
+  end: {
+    text: ["Buenísimo, chicos. Gracias por leer hasta acá.", "Mándenme un WhatsApp. Junto a todos los que me escriban en un chat y, a partir de ahí, quienes estén en el grupo deciden cómo seguir.", "Los quiero mucho. MUAAAAAAAAA"],
+    restart: true
+  },
+  no: {
+    text: ["¡Perfecto! No hay problema… Te quiero mucho. Muchas gracias y perdoná las molestias."],
+    restart: true
+  },
+  later: {
+    text: ["Todo bien. No hay apuro ni deuda.", "Si más adelante te da curiosidad, volvés a abrirlo."],
+    restart: true
+  }
+};
+
+const app = document.getElementById("app");
+let path = [];            // [{node, choiceIndex}]
+let current = "start";
+
+function el(tag, cls, html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!==undefined)e.textContent=html;return e}
+
+function levelEl(id, n, past){
+  const d = STORY[id], box = el("section","level"+(past?" past":" enter"));
+  box.appendChild(el("p","tag","nivel "+n));
+  d.text.forEach(t=>{if(t.startsWith("## "))box.appendChild(el("h2","",t.slice(3)));else if(t.startsWith("- "))box.appendChild(el("p","item",t.slice(2)));else box.appendChild(el("p",d.big?"big":"",t))});
+  if(d.aside) box.appendChild(el("p","aside",d.aside));
+  return box;
+}
+
+const TOTAL=7;
+function updateBar(n){
+  const bar=document.getElementById("bar");bar.innerHTML="";
+  for(let i=1;i<=TOTAL;i++){
+    const d=document.createElement("i");if(i<=n)d.className="on";bar.appendChild(d);
+    if(i<TOTAL){const l=document.createElement("b");if(i<n)l.className="on";bar.appendChild(l)}
+  }
+  bar.setAttribute("aria-valuenow",Math.min(n,TOTAL));bar.setAttribute("aria-label","Nivel "+Math.min(n,TOTAL)+" de "+TOTAL);
+}
+function render(){
+  updateBar(path.length+1);
+  app.innerHTML = "";
+  path.forEach((step,i)=>{
+    app.appendChild(levelEl(step.node,i+1,true));
+    const c = STORY[step.node].choices[step.choice];
+    const r = el("div","reply"); r.appendChild(el("span","",c.reply)); app.appendChild(r);
+  });
+  const n = path.length+1, box = levelEl(current,n,false), d = STORY[current];
+  if(d.choices){
+    const ch = el("div","choices");
+    d.choices.forEach((c,i)=>{
+      const b = el("button",c.main?"main":"",c.label);
+      b.onclick=()=>{path.push({node:current,choice:i});current=c.to;render();window.scrollTo({top:document.body.scrollHeight,behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth"})};
+      ch.appendChild(b);
+    });
+    box.appendChild(ch);
+  }
+  if(d.restart){
+    const b = el("button","restart","Volver a empezar");
+    b.onclick=()=>{path=[];current="start";render();window.scrollTo(0,0)};
+    box.appendChild(b);
+  }
+  if(path.length){
+    const back = el("button","back","Volver un paso");
+    back.onclick=()=>{const last=path.pop();current=last.node;render()};
+    box.appendChild(back);
+  }
+  app.appendChild(box);
+}
+render();
+</script>
+</body>
+</html>
